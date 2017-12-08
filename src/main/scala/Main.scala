@@ -14,11 +14,11 @@ import scala.collection.mutable.ListBuffer
 object Main {
   val ERRONEOUS_DIR: String = "erroneous"
   val AGGREGATED_DIR: String = "aggregated"
+  val BIDS_DIVIDED_DIR: String = "bids_divided"
   val BIDS_PATH = "SparkHW/src/main/resources/bids.txt";
   val MOTELS_PATH = "SparkHW/src/main/resources/motels.txt";
   val EXCHANGE_RATE = "SparkHW/src/main/resources/exchange_rate.txt"
-  val OUTPUT = "SparkHW/src/main/resources/output8"
-  val VALUES_OUTPUT = "SparkHW/src/main/resources/out132"
+  val OUTPUT = "SparkHW/src/main/resources/output"
 
   def main(args: Array[String]): Unit = {
     System.setProperty("hadoop.home.dir", "C:\\Users\\Markiian_Yuskevych\\IdeaProjects\\Projects\\SparkRecommendation")
@@ -45,7 +45,7 @@ object Main {
       * Hint: Use the BideError case class
       */
      val erroneousRecords: RDD[String] = getErroneousRecords(sc, bidsPath)
-   // erroneousRecords.saveAsTextFile(s"$outputBasePath/$ERRONEOUS_DIR")
+     erroneousRecords.saveAsTextFile(s"$outputBasePath/$ERRONEOUS_DIR")
 
     /**
       * Task 2:
@@ -62,7 +62,7 @@ object Main {
       * - Get rid of records where there is no price for a Losa or the price is not a proper decimal number
       */
     val bids: RDD[BidItem] = getBids(rawBids, exchangeRates)
-  //  bids.saveAsTextFile(VALUES_OUTPUT)
+    bids.saveAsTextFile(s"$outputBasePath/$BIDS_DIVIDED_DIR")
     /**
       * Task 4:
       * Load motels data.
