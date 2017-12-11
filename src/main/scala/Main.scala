@@ -38,6 +38,7 @@ object Main {
       * Read the bid data from the provided file.
       */
     val rawBids: RDD[List[String]] = getRawBids(sc, bidsPath)
+    rawBids.cache()
    // rawBids.saveAsTextFile(VALUES_OUTPUT)
     /**
       * Task 1:
@@ -134,15 +135,21 @@ object Main {
   }
 
   def getEnriched(bids: RDD[BidItem], motels: Map[String, String]): RDD[EnrichedItem] = {
-
+    var tmpEnrichedItem :EnrichedItem= null
     val enrichedRecords : RDD[EnrichedItem]= bids.map(x=> {
-      var list = mutable.MutableList[EnrichedItem]()
+
         if(motels.contains(x.motelId)){
-          list+=new EnrichedItem(x.motelId, motels.get(x.motelId).get, x.bidDate,x.loSa, x.price)
+          tmpEnrichedItem=new EnrichedItem(x.motelId, motels.get(x.motelId).get, x.bidDate,x.loSa, x.price)
         }
-      list.toList.head
+      tmpEnrichedItem
     })
-    val enrichedMaxItem = enrichedRecords.groupBy(x=>x.motelId).map(v=>v._2.max)
-    enrichedMaxItem
+
+    var setForMaxValues = mutable.HashSet[EnrichedItem]()
+    val enrichedMaxItems:RDD[EnrichedItem] = enrichedRecords.groupBy(x=> (x.motelId,x.bidDate)).map(v =>{
+      tmpEnrichedItem=v._2.max
+      tmpEnrichedItem
+    })
+    enrichedMaxItems.sortBy(x=>x.motelId)
+
   }
 }
