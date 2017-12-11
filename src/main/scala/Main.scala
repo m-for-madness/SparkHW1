@@ -91,11 +91,10 @@ object Main {
   }
 
   def getErroneousRecords(sc: SparkContext, bidsPath: String): RDD[String] = {
-    val bidsErrorRDD = sc.textFile(bidsPath).filter(x=> x.contains("ERROR")).map(s => {
+    val bidsErrorRDD : RDD[BidError] = sc.textFile(bidsPath).filter(x=> x.contains("ERROR")).map(s => {
       s.split(",").toList
-    })
-   // bidsErrorRDD.foreach(x=> println(x))
-    val bidsErrors : RDD[String] = bidsErrorRDD.map(x => (new BidError(x(1),x(2))).toString)
+    }).map(x => (new BidError(x(1),x(2))))
+    val bidsErrors : RDD[String] = bidsErrorRDD.groupBy(x=>(x.date,x.errorMessage)).map(v => v._1._1 + "," + v._1._2 + "," + v._2.size)
     bidsErrors
   }
 
