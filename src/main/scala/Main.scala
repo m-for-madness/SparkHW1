@@ -5,11 +5,10 @@ import java.util.Date
 
 import com.epam.hubd.spark.scala.core.homework.Constants
 import com.epam.hubd.spark.scala.core.homework.domain.{BidError, BidItem, EnrichedItem}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 
 object Main {
   val ERRONEOUS_DIR: String = "erroneous"
@@ -21,7 +20,7 @@ object Main {
   val OUTPUT = "SparkHW/src/main/resources/output"
 
   def main(args: Array[String]): Unit = {
-    System.setProperty("hadoop.home.dir", "C:\\Users\\Markiian_Yuskevych\\IdeaProjects\\Projects\\SparkRecommendation")
+    System.setProperty("hadoop.home.dir", "C:\\hadoop_home")
     val sc = new SparkContext(new SparkConf().setAppName("motels-home-recommendation").setMaster("local"))
     val raw : RDD[String] = sc.textFile(BIDS_PATH)
 
@@ -45,7 +44,7 @@ object Main {
       * Collect the errors and save the result.
       * Hint: Use the BideError case class
       */
-     val erroneousRecords: RDD[String] = getErroneousRecords(sc, bidsPath)
+     val erroneousRecords: RDD[String] = getErroneousRecords(rawBids)
      erroneousRecords.saveAsTextFile(s"$outputBasePath/$ERRONEOUS_DIR")
 
     /**
@@ -82,18 +81,14 @@ object Main {
   }
 
   def getRawBids(sc: SparkContext, bidsPath: String): RDD[List[String]] = {
-    val rawBidsRDD:RDD[List[String]] = sc.textFile(bidsPath).filter(s => {
-      !s.contains("ERROR")
-    }).map(s => {
+    val rawBidsRDD:RDD[List[String]] = sc.textFile(bidsPath).map(s => {
       s.split(",").toList
     })
     rawBidsRDD
   }
 
-  def getErroneousRecords(sc: SparkContext, bidsPath: String): RDD[String] = {
-    val bidsErrorRDD : RDD[BidError] = sc.textFile(bidsPath).filter(x=> x.contains("ERROR")).map(s => {
-      s.split(",").toList
-    }).map(x => (new BidError(x(1),x(2))))
+  def getErroneousRecords(rawBidsRDD: RDD[List[String]]): RDD[String] = {
+    val bidsErrorRDD : RDD[BidError] = rawBidsRDD.filter(v=> v(2).contains("ERROR")).map(x => (new BidError(x(1),x(2))))
     val bidsErrors : RDD[String] = bidsErrorRDD.groupBy(x=>(x.date,x.errorMessage)).map(v => v._1._1 + "," + v._1._2 + "," + v._2.size)
     bidsErrors
   }
@@ -108,7 +103,9 @@ object Main {
 
   def getBids(rawBids: RDD[List[String]], exchangeRates: Map[String, Double]): RDD[BidItem] = {
 
-    val bidItemList : RDD[BidItem] = rawBids.map(x => {
+    val bidItemList : RDD[BidItem] = rawBids.filter(s => {
+      !s(2).contains("ERROR")
+    }).map(x => {
       var list = mutable.MutableList[BidItem]()
       for(i<-List(5,6,8);if(x(i)!="")){
         if(exchangeRates.contains(x(1))){
@@ -148,7 +145,7 @@ object Main {
       tmpEnrichedItem=v._2.max
       tmpEnrichedItem
     })
-    enrichedMaxItems.sortBy(x=>x.motelId)
+    enrichedMaxItems//.sortBy(x=>x.motelId)
 
   }
 }
