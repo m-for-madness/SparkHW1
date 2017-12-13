@@ -1,2 +1,3 @@
 src/main/resources/
 target/
+src/test/resources/bids_sample.txt

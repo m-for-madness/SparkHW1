@@ -1,7 +1,6 @@
 package main.scala
 
 import java.text.SimpleDateFormat
-import java.util.Date
 
 import com.epam.hubd.spark.scala.core.homework.Constants
 import com.epam.hubd.spark.scala.core.homework.domain.{BidError, BidItem, EnrichedItem}
@@ -20,12 +19,16 @@ object Main {
   val OUTPUT = "SparkHW/src/main/resources/output"
 
   def main(args: Array[String]): Unit = {
-    System.setProperty("hadoop.home.dir", "C:\\hadoop_home")
+    require(args.length == 4, "Provide parameters in this order: bidsPath, motelsPath, exchangeRatesPath, outputBasePath")
+    val bidsPath = args(0)
+    val motelsPath = args(1)
+    val exchangeRatesPath = args(2)
+    val outputBasePath = args(3)
+    //System.setProperty("hadoop.home.dir", "C:\\hadoop_home")
     val sc = new SparkContext(new SparkConf().setAppName("motels-home-recommendation").setMaster("local"))
-    val raw : RDD[String] = sc.textFile(BIDS_PATH)
 
-    processData(sc, BIDS_PATH, MOTELS_PATH, EXCHANGE_RATE, OUTPUT)
-
+    processData(sc, bidsPath, motelsPath, exchangeRatesPath, outputBasePath)
+    //processData(sc, BIDS_PATH, MOTELS_PATH, EXCHANGE_RATE, OUTPUT)
     sc.stop()
   }
 
@@ -109,9 +112,8 @@ object Main {
       var list = mutable.MutableList[BidItem]()
       for(i<-List(5,6,8);if(x(i)!="")){
         if(exchangeRates.contains(x(1))){
-          val  simpleDateFormat:SimpleDateFormat = new SimpleDateFormat("HH-dd-MM-yyyy");
-          val  date:Date = simpleDateFormat.parse(x(1));
-          val ans = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(date)
+          val  simpleDateFormat = new SimpleDateFormat("HH-dd-MM-yyyy")
+          val ans = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(simpleDateFormat.parse(x(1)))
           list += new BidItem(x(0),ans,Constants.BIDS_HEADER(i),BigDecimal(x(i).toDouble*exchangeRates.get(x(1)).get).setScale(3, BigDecimal.RoundingMode.HALF_UP).toDouble)
         }
       }
