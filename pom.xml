@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -19,6 +19,14 @@
             <artifactId>spark-core_2.11</artifactId>
             <version>2.2.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-hive -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_2.11</artifactId>
+            <version>2.2.1</version>
+        </dependency>
+
+
         <dependency>
             <groupId>com.github.nscala-time</groupId>
             <artifactId>nscala-time_2.11</artifactId>
@@ -63,7 +71,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.epam.hubd.homework.MotelsHomeRecommendation</mainClass>
+                            <mainClass>Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
